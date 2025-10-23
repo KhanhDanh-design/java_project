@@ -40,15 +40,13 @@ Dự án nhỏ bằng Java để quản lý mô hình Gundam theo phong cách h�
 2. Biên dịch tất cả các file .java:
 
 ```powershell
-if (-Not (Test-Path out)) { New-Item -ItemType Directory -Path out }
-$files = Get-ChildItem -Path src -Filter *.java | ForEach-Object { $_.FullName }
-javac -d out $files
+javac *.java
 ```
 
 3. Chạy chương trình chính (menu):
 
 ```powershell
-java -cp out App
+java App
 ```
 
 Ghi chú: PowerShell cũ có thể gặp encoding khi in dấu tiếng Việt; dự án đã dùng chuỗi ASCII-only cho các thông báo (ví dụ: "Da nhap", "Ton kho") để tránh lỗi hiển thị.
