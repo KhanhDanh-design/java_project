@@ -21,10 +21,8 @@ public class App {
                 case "add": {
                     System.out.print("Enter base name: ");
                     String name = scanner.nextLine().trim();
-                    System.out.print("Enter base price (number): ");
-                    double price = Double.parseDouble(scanner.nextLine().trim());
-                    System.out.print("Quantity to import: ");
-                    int qty = Integer.parseInt(scanner.nextLine().trim());
+                    double price = readDouble(scanner, "Enter base price (number): ");
+                    int qty = readInt(scanner, "Quantity to import: ");
                     System.out.print("Add LED? (y/n): ");
                     boolean led = scanner.nextLine().trim().equalsIgnoreCase("y");
                     System.out.print("Add Weapon? (y/n): ");
@@ -53,8 +51,7 @@ public class App {
                         System.out.println("Product not found: " + desc);
                         break;
                     }
-                    System.out.print("Enter new quantity (0 to remove): ");
-                    int newQty = Integer.parseInt(scanner.nextLine().trim());
+                    int newQty = readInt(scanner, "Enter new quantity (0 to remove): ");
                     inventory.setQuantity(found, newQty);
                     break;
                 }
@@ -66,8 +63,7 @@ public class App {
                         System.out.println("Product not found: " + desc);
                         break;
                     }
-                    System.out.print("Quantity to sell: ");
-                    int q = Integer.parseInt(scanner.nextLine().trim());
+                    int q = readInt(scanner, "Quantity to sell: ");
                     inventory.sellGundam(found, q);
                     break;
                 }
@@ -96,5 +92,31 @@ public class App {
             if (e.getKey().getDescription().equals(description)) return e.getKey();
         }
         return null;
+    }
+
+    // Read an integer from scanner with prompt, repeat until valid
+    private static int readInt(Scanner scanner, String prompt) {
+        while (true) {
+            try {
+                System.out.print(prompt);
+                String line = scanner.nextLine().trim();
+                return Integer.parseInt(line);
+            } catch (NumberFormatException ex) {
+                System.out.println("Invalid number. Please enter an integer.");
+            }
+        }
+    }
+
+    // Read a double from scanner with prompt, repeat until valid
+    private static double readDouble(Scanner scanner, String prompt) {
+        while (true) {
+            try {
+                System.out.print(prompt);
+                String line = scanner.nextLine().trim();
+                return Double.parseDouble(line);
+            } catch (NumberFormatException ex) {
+                System.out.println("Invalid number. Please enter a valid decimal number.");
+            }
+        }
     }
 }
