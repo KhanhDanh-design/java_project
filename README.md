@@ -6,13 +6,21 @@ Dự án nhỏ bằng Java để quản lý mô hình Gundam theo phong cách h�
 
 Ứng dụng cho phép tạo, nhập, bán, sửa, xóa và liệt kê các mô hình Gundam trong kho. Thiết kế tập trung vào tính mở rộng: có thể thêm các decorator (LED, vũ khí, sơn, bản giới hạn...) mà không thay đổi lớp cơ sở.
 
-## Tính năng
+## Tính năng (đã triển khai)
 
 - Tạo mô hình cơ bản (`BasicGundam`) với tên và giá gốc.
-- Mở rộng mô hình bằng các `Decorator`: `LedDecorator`, `WeaponDecorator` (ví dụ: thêm LED, thêm vũ khí).
-- Quản lý tồn kho qua `GundamInventory` (Singleton): nhập hàng, bán hàng, xem tồn kho.
-- Menu tương tác trong `App.java` để thêm/xóa/sửa/bán/hiển thị sản phẩm.
-- Mã mẫu mở rộng và tài liệu (trong `mermay.txt`) gồm `PaintingDecorator`, `LimitedEdition`, và `GundamKey` để gợi ý cách mở rộng.
+- Mở rộng mô hình bằng các `Decorator`: `LedDecorator`, `WeaponDecorator` (ví dụ: thêm LED, thêm vũ khí). Các decorator có thể xâu chuỗi (một mô hình có thể có LED và vũ khí cùng lúc).
+- Quản lý tồn kho qua `GundamInventory` (Singleton):
+	- `importGundam(g, qty)` — nhập hàng (tăng số lượng).
+	- `sellGundam(g, qty)` — bán hàng (giảm số lượng nếu đủ tồn).
+	- `setQuantity(g, qty)` — đặt trực tiếp số lượng (0 để xóa mục).
+	- `removeGundam(g)` — xóa hoàn toàn một mục khỏi kho.
+- Menu tương tác trong `App.java` (console):
+	- Các hành động: `add`, `remove`, `edit`, `sell`, `show`, `list`, `exit`.
+	- Khi thực hiện `remove` / `edit` / `sell`, chương trình sẽ hiển thị danh sách sản phẩm (có chỉ số) để người dùng chọn bằng số, tránh phải gõ chính xác mô tả.
+	- Lệnh `list` cho phép lọc theo khoảng giá (min/max) và khoảng số lượng (min/max) trước khi hiển thị.
+	- Đã thêm kiểm tra nhập liệu: khi nhập số lượng hoặc giá, chương trình chỉ chấp nhận số (yêu cầu nhập lại nếu nhập chữ).
+- `mermay.txt` và `text.txt` chứa tài liệu bổ sung: hướng dẫn mở rộng, ví dụ `PaintingDecorator`, `LimitedEdition`, `GundamKey` và sơ đồ Mermaid.
 
 ## Cấu trúc project (các file chính)
 
@@ -32,13 +40,15 @@ Dự án nhỏ bằng Java để quản lý mô hình Gundam theo phong cách h�
 2. Biên dịch tất cả các file .java:
 
 ```powershell
-javac *.java
+if (-Not (Test-Path out)) { New-Item -ItemType Directory -Path out }
+$files = Get-ChildItem -Path src -Filter *.java | ForEach-Object { $_.FullName }
+javac -d out $files
 ```
 
 3. Chạy chương trình chính (menu):
 
 ```powershell
-java App
+java -cp out App
 ```
 
 Ghi chú: PowerShell cũ có thể gặp encoding khi in dấu tiếng Việt; dự án đã dùng chuỗi ASCII-only cho các thông báo (ví dụ: "Da nhap", "Ton kho") để tránh lỗi hiển thị.
@@ -52,3 +62,6 @@ Ghi chú: PowerShell cũ có thể gặp encoding khi in dấu tiếng Việt; d
 ## Liên hệ
 
 Repo gốc: https://github.com/KhanhDanh-design/java_project.git
+
+
+
