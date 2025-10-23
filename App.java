@@ -1,5 +1,7 @@
 import java.util.Map;
 import java.util.Scanner;
+import java.util.List;
+import java.util.ArrayList;
 
 public class App {
     public static void main(String[] args) {
@@ -36,35 +38,22 @@ public class App {
                     break;
                 }
                 case "remove": {
-                    System.out.print("Enter exact description of product to remove: ");
-                    String desc = scanner.nextLine().trim();
-                    Gundam found = findByDescription(inventory, desc);
-                    if (found != null) inventory.removeGundam(found);
-                    else System.out.println("Product not found: " + desc);
+                    Gundam selected = selectGundamFromInventory(scanner, inventory);
+                    if (selected != null) inventory.removeGundam(selected);
                     break;
                 }
                 case "edit": {
-                    System.out.print("Enter exact description of product to edit: ");
-                    String desc = scanner.nextLine().trim();
-                    Gundam found = findByDescription(inventory, desc);
-                    if (found == null) {
-                        System.out.println("Product not found: " + desc);
-                        break;
-                    }
+                    Gundam selected = selectGundamFromInventory(scanner, inventory);
+                    if (selected == null) break;
                     int newQty = readInt(scanner, "Enter new quantity (0 to remove): ");
-                    inventory.setQuantity(found, newQty);
+                    inventory.setQuantity(selected, newQty);
                     break;
                 }
                 case "sell": {
-                    System.out.print("Enter exact description of product to sell: ");
-                    String desc = scanner.nextLine().trim();
-                    Gundam found = findByDescription(inventory, desc);
-                    if (found == null) {
-                        System.out.println("Product not found: " + desc);
-                        break;
-                    }
+                    Gundam selected = selectGundamFromInventory(scanner, inventory);
+                    if (selected == null) break;
                     int q = readInt(scanner, "Quantity to sell: ");
-                    inventory.sellGundam(found, q);
+                    inventory.sellGundam(selected, q);
                     break;
                 }
                 case "show": {
@@ -72,10 +61,15 @@ public class App {
                     break;
                 }
                 case "list": {
-                    Map<Gundam, Integer> snap = inventory.getStockSnapshot();
-                    System.out.println("Available products (descriptions):");
-                    for (Gundam g : snap.keySet()) {
-                        System.out.println("- " + g.getDescription() + " | Price: " + g.getPrice() + " | Qty: " + snap.get(g));
+                    // Allow filtering when listing
+                    Map<Gundam, Integer> filtered = getFilteredSnapshot(scanner, inventory);
+                    if (filtered.isEmpty()) {
+                        System.out.println("No products match the filter.");
+                    } else {
+                        System.out.println("Available products (descriptions):");
+                        for (Gundam g : filtered.keySet()) {
+                            System.out.println("- " + g.getDescription() + " | Price: " + g.getPrice() + " | Qty: " + filtered.get(g));
+                        }
                     }
                     break;
                 }
@@ -85,13 +79,6 @@ public class App {
         }
 
         scanner.close();
-    }
-
-    private static Gundam findByDescription(GundamInventory inventory, String description) {
-        for (Map.Entry<Gundam, Integer> e : inventory.getStockSnapshot().entrySet()) {
-            if (e.getKey().getDescription().equals(description)) return e.getKey();
-        }
-        return null;
     }
 
     // Read an integer from scanner with prompt, repeat until valid
@@ -118,5 +105,63 @@ public class App {
                 System.out.println("Invalid number. Please enter a valid decimal number.");
             }
         }
+    }
+
+    // Display inventory with optional filters and allow user to select an item by index
+    private static Gundam selectGundamFromInventory(Scanner scanner, GundamInventory inventory) {
+        Map<Gundam, Integer> filtered = getFilteredSnapshot(scanner, inventory);
+        if (filtered.isEmpty()) return null;
+
+        List<Gundam> list = new ArrayList<>(filtered.keySet());
+        for (int i = 0; i < list.size(); i++) {
+            Gundam g = list.get(i);
+            System.out.println((i + 1) + ") " + g.getDescription() + " | Price: " + g.getPrice() + " | Qty: " + filtered.get(g));
+        }
+        int idx = readInt(scanner, "Choose an item by number (0 to cancel): ");
+        if (idx <= 0 || idx > list.size()) {
+            System.out.println("Cancelled or invalid selection.");
+            return null;
+        }
+        return list.get(idx - 1);
+    }
+
+    // Build a filtered snapshot based on user-specified min/max price or quantity
+    private static Map<Gundam, Integer> getFilteredSnapshot(Scanner scanner, GundamInventory inventory) {
+        Map<Gundam, Integer> snap = inventory.getStockSnapshot();
+
+        System.out.print("Do you want to apply filters? (y/n): ");
+        String apply = scanner.nextLine().trim();
+        if (!apply.equalsIgnoreCase("y")) return snap;
+
+        Double minPrice = null, maxPrice = null;
+        Integer minQty = null, maxQty = null;
+
+        System.out.print("Filter by price range? (y/n): ");
+        if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
+            minPrice = readDouble(scanner, "Min price (or leave blank for none): ");
+            maxPrice = readDouble(scanner, "Max price (or leave blank for none): ");
+        }
+
+        System.out.print("Filter by quantity range? (y/n): ");
+        if (scanner.nextLine().trim().equalsIgnoreCase("y")) {
+            minQty = readInt(scanner, "Min quantity (or 0 for none): ");
+            maxQty = readInt(scanner, "Max quantity (or 0 for none): ");
+            if (minQty != null && minQty == 0) minQty = null;
+            if (maxQty != null && maxQty == 0) maxQty = null;
+        }
+
+        Map<Gundam, Integer> out = new java.util.HashMap<>();
+        for (Map.Entry<Gundam, Integer> e : snap.entrySet()) {
+            Gundam g = e.getKey();
+            int q = e.getValue();
+            double p = g.getPrice();
+
+            if (minPrice != null && p < minPrice) continue;
+            if (maxPrice != null && p > maxPrice) continue;
+            if (minQty != null && q < minQty) continue;
+            if (maxQty != null && q > maxQty) continue;
+            out.put(g, q);
+        }
+        return out;
     }
 }
