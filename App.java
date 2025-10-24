@@ -8,6 +8,23 @@ public class App {
         Scanner scanner = new Scanner(System.in);
         GundamInventory inventory = GundamInventory.getInstance();
 
+        // --- Default sample models (so menu starts with example data) ---
+        // If you restart the program these will be re-imported; adjust quantities as needed
+        Gundam rx78 = new BasicGundam("RX-78", 500000);
+        Gundam rx78Led = new LedDecorator(rx78);
+        Gundam unicorn = new BasicGundam("Unicorn", 700000);
+        Gundam unicornFull = new WeaponDecorator(new LedDecorator(unicorn));
+        Gundam zaku = new BasicGundam("Zaku II", 300000);
+        Gundam wing = new BasicGundam("Wing Gundam", 650000);
+        Gundam wingWeapon = new WeaponDecorator(wing);
+
+        // Import default sample quantities
+        inventory.importGundam(rx78, 10);
+        inventory.importGundam(rx78Led, 5);
+        inventory.importGundam(unicornFull, 3);
+        inventory.importGundam(zaku, 8);
+        inventory.importGundam(wingWeapon, 4);
+
         System.out.println("Welcome to Gundam Inventory (menu):");
         while (true) {
             System.out.println("\nChoose an action: add | remove | edit | sell | show | list | exit");
